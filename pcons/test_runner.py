@@ -460,12 +460,20 @@ def run_one_test(test: dict, build_dir: Path) -> TestResult:
         )
     except subprocess.TimeoutExpired as e:
         duration = time.monotonic() - start
+        # With text=True a timeout still hands back bytes on POSIX; keeping
+        # only str discarded everything the test printed before it hung.
+        stdout = e.stdout or b""
+        if isinstance(stdout, bytes):
+            stdout = stdout.decode(errors="replace")
+        stderr = e.stderr or b""
+        if isinstance(stderr, bytes):
+            stderr = stderr.decode(errors="replace")
         return TestResult(
             name=name,
             status=TIMEOUT,
             duration=duration,
-            stdout=e.stdout or "" if isinstance(e.stdout, str) else "",
-            stderr=e.stderr or "" if isinstance(e.stderr, str) else "",
+            stdout=stdout,
+            stderr=stderr,
             message=f"Killed after {timeout}s",
             labels=labels,
         )
