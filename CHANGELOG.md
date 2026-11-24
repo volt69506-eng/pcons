@@ -30,6 +30,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `create_appx()` takes every `create_msix()` option (`executable`,
   `depends`, `icon`, signing), and a signed AppX package is named
   `.signed.appx`, not `.signed.msix`.
+- Removing a project's last `Test` removes `tests.json`, so `pcons test` no
+  longer runs the old tests. Graph generators no longer write a `tests.json`
+  next to their output. (#292)
+- `pcons test --junit` keeps both output streams of a test that fails, errors
+  or times out: the failure text has stdout then stderr, and the test case
+  gets `<system-out>` and `<system-err>`. Before, stderr hid stdout. (#296)
 
 ## [0.33.0] - 2026-11-14
 
