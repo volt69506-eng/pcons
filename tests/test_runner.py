@@ -247,6 +247,25 @@ class TestSingleTestExecution:
         )
         assert result.status == TIMEOUT
 
+    def test_timeout_keeps_the_output_printed_before_the_hang(self, tmp_path):
+        """The partial stdout/stderr of a timed-out test is the only clue
+        where it stopped, so TimeoutExpired's captured bytes must survive."""
+        script = _make_exit_script(
+            tmp_path,
+            "partial.py",
+            "import sys, time\n"
+            "print('halfway', flush=True)\n"
+            "print('also stderr', file=sys.stderr, flush=True)\n"
+            "time.sleep(5)\n",
+        )
+        result = run_one_test(
+            {"name": "partial", "command": [str(script)], "timeout": 0.3},
+            tmp_path,
+        )
+        assert result.status == TIMEOUT
+        assert "halfway" in result.stdout
+        assert "also stderr" in result.stderr
+
     def test_program_not_found(self, tmp_path):
         result = run_one_test(
             {"name": "missing", "command": ["does_not_exist_xyz"], "labels": []},
